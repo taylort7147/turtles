@@ -1,0 +1,22 @@
+----------------------
+-- Static functions --
+----------------------
+
+function split(str, sep)
+  sep = sep or "%s"
+  if str == "" then return {} end
+  local t = {}
+  for m in string.gmatch(str, "([^"..sep.."]+)") do
+    table.insert(t, m)
+  end
+  return t
+end
+
+function contains(t, value)
+  if type(t) ~= "table" or value == nil then return false end
+  local i, v
+  for i, v in ipairs(t) do
+    if v == value then return true end
+  end
+  return false
+end

@@ -1,0 +1,326 @@
+-----------------
+--    T API    --
+-----------------
+
+-- Constants --
+MAX_SLOTS = 16
+INVALID_SLOT = -1400
+INVALID_ARGUMENT = -1401
+RUNTIME_ERROR = -1402
+OUT_OF_FUEL = -1403
+---------------
+
+---------------------
+-- Turtle functions
+---------------------
+
+-- Checks if the turtle has enough
+-- fuel to perform one movement
+-- Throws an error if there is not enough fuel
+function checkFuel()
+  if turtle.getFuelLevel() ~= "unlimited" and turtle.getFuelLevel() < 1 then
+  	error("Out of fuel", OUT_OF_FUEL)
+  end
+end
+
+-- Move or turn the turtle in the specified
+-- direction.
+-- Args:
+--  direction: the direction to move
+--  distance (optional): how far to move or
+--     the number of times to turn
+function go(direction, distance)
+  local status = true
+  local distance = distance or 1
+  
+  moveFunc = getMoveFunction(direction)
+    
+  waitForFuel(distance)
+  local i
+  for i = 1, distance, 1 do
+    status = status and moveFunc()
+  end
+  return status
+end
+
+-- Wraps turtle.up() with a fuel check
+function up(...)
+  return go("up", ...)
+end
+
+-- Wraps turtle.down() with a fuel check
+function down(...)
+  return go("down", ...)
+end
+
+-- Wraps turtle.turnRight() with a fuel check 
+function turnRight(...)
+  return go("right", ...)
+end
+
+-- Wraps turtle.turnLeft() with a fuel check
+function turnLeft(...)
+  return go("left", ...)
+end
+
+function forward(...)
+  return go("forward", ...)
+end
+
+function back(...)
+  return go("backward", ...)
+end
+
+function select(slot)
+  return turtle.select(slot)
+end
+  
+function place()
+  return turtle.place()
+end
+  
+function placeUp()
+  return turtle.placeUp()
+end
+
+function placeDown()
+  return turtle.placeDown()
+end
+  
+function inspect()
+  return turtle.inspect()
+end
+  
+function inspectUp()
+  return turtle.inspectUp()
+end
+
+function inspectDown()
+  return turtle.inspectDown()
+end
+
+function dig()
+  return turtle.dig()
+end
+
+function digUp()
+  return turtle.digUp()
+end
+
+function digDown()
+  return turtle.digDown()
+end
+
+-- Gets the name of the item in the
+-- slot, or "unknown" if there is no
+-- item in the slot
+function getItemName(slot)
+  local data = turtle.getItemDetail(slot)
+  if data then
+    return data.name
+  end
+  return "unknown"
+end
+
+-- Gets the first slot containing the
+-- item by the given name, or
+-- INVALID_SLOT if the item could not
+-- be found
+function findItemByName(name)
+  local slot
+  for slot = 1, MAX_SLOTS, 1 do
+    local itemName
+    itemName = getItemName(slot)
+    if(itemName == name) then
+      return slot 
+    end
+  end 
+  return INVALID_SLOT
+end
+
+-- Tries to refuel from each slot
+-- until the specified fuel level is
+-- reached.
+function waitForFuel(fuelLevel)
+  local slot = 1 
+  if not fuelLevel then
+    fuelLevel = 0
+  end
+  
+  -- Check if we need fuel at all
+  if(turtle.getFuelLevel() < fuelLevel) then
+    print("Waiting to reach fuel level " ..
+      tostring(fuelLevel)
+    )
+    while turtle.getFuelLevel() < fuelLevel do
+      turtle.select(slot)
+      turtle.refuel()
+      slot = (slot % 16) + 1
+    end
+  end
+end
+
+function getMoveFunction(direction)
+  if direction == "left" then
+    return turtle.turnLeft
+  elseif direction == "right" then
+    return turtle.turnRight
+  elseif direction == "up" then
+    return turtle.up
+  elseif direction == "down" then
+    return turtle.down
+  elseif direction == "forward" then
+    return turtle.forward
+  elseif direction == "backward" or direction == "back" then
+    return turtle.back
+  else
+    error("Invalid direction: " ..
+      tostring(direction), 
+      INVALID_ARGUMENT)
+  end
+end
+
+function getTurnFunction(direction)
+  if direction == "right" then
+    return turtle.turnRight
+  elseif direction == "left" then
+    return turtle.turnLeft
+  else
+    error("Invalid direction: " ..
+      tostring(direction), 
+      INVALID_ARGUMENT)
+  end
+end
+
+function getOppositeDirection(direction)
+  if direction == "left" then
+    return "right"
+  elseif direction == "right" then
+    return "left"
+  elseif direction == "up" then
+    return "down"
+  elseif direction == "down" then
+    return "up"
+  elseif direction == "forward" then
+    return "backward"
+  elseif direction == "backward" or direction == "back" then
+    return "forward"
+  else
+    error("Invalid direction: " ..
+      tostring(direction),
+      INVALID_ARGUMENT)
+  end
+end
+
+function turn(direction)
+  local turnFunc = getTurnFunction(direction)
+  turnFunc()
+end
+
+function getInspectFunction(direction)
+  if direction == "up" then
+    return turtle.inspectUp
+  elseif direction == "down" then
+    return turtle.inspectDown
+  elseif direction == "forward" then
+    return turtle.inspect
+  else
+    error("Invalid direction: " ..
+      tostring(direction),
+      INVALID_ARGUMENT)
+  end
+end
+
+function getBlockType(direction)
+  local success
+  local data
+  local inspectFunc
+  inspectFunc = getInspectFunction(direction)
+  success, data = inspectFunc()
+  if success then
+    return data.name
+  end
+  return nil
+end  
+
+function getBlockMeta(direction)
+  local success
+  local data 
+  local inspectFunc
+  inspectFunc = getInspectFunction(direction)
+  success, data = inspectFunc()
+  if success then
+    return data.metadata
+  end
+  return nil
+end
+
+-------------------------------------------------------------------------------
+-- ListNode class
+-------------------------------------------------------------------------------
+ListNode = {value = nil, next = nil}
+
+
+function ListNode:new(value)
+  obj = {}
+  setmetatable(obj, self)
+  self.__index = self
+  obj.value = value
+  obj.next = nil
+  return obj
+end
+
+-------------------------------------------------------------------------------
+-- List class
+-------------------------------------------------------------------------------
+List = {head = nil, size = 0}
+
+function List:new()
+  obj = {}
+  setmetatable(obj, self)
+  self.__index = self
+  obj.head = nil
+  obj.size = 0
+  return obj
+end
+
+function List:print()
+  print("Size: " .. tostring(self.size))
+  if self.size > 0 then
+    print("Elements:")
+    local curr = self.head
+    while curr ~= nil do
+      print(" " .. tostring(curr.value))
+      curr = curr.next
+    end
+  end
+end
+
+function List:append(value)
+  if self.head == nil then
+    self.head = ListNode:new(value)
+  else
+    local curr = self.head
+    while curr.next ~= nil do
+      curr = curr.next
+    end
+    curr.next = ListNode:new(value)
+  end
+  print(tostring(self.size))
+  self.size = self.size + 1
+end
+
+function List:contains(value)
+  local curr = self.head
+  while curr ~= nil do
+    if curr.value == value then
+      return true
+    end
+    curr = curr.next
+  end
+  return false
+end
+
+
+
+

@@ -1,0 +1,12 @@
+os.loadAPI("api/service")
+os.loadAPI("api/fileservice")
+local svc = service
+local fs = fileservice
+
+s = fs.FileService:new({hostname="Computer_"..tostring(os.getComputerID())})
+-- print(s.hostname)
+-- print(s.protocol)
+s:init()
+s:start()
+
+

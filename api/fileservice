@@ -1,0 +1,137 @@
+------------------
+-- File Service --
+------------------
+os.loadAPI("api/service")
+local svc = service -- Shorthand
+
+-------------------------------
+-- Inherit fields in service --
+-------------------------------
+Service = svc.Service
+Command = svc.Command
+
+
+----------------------
+-- Static functions --
+----------------------
+-- function exists(name)
+  -- if type(name) ~= "string" then return false end
+  -- return os.rename(name,name) and true or false
+-- end
+
+
+---------------
+-- Commands  --
+---------------
+function FileTransferCommand(filename)
+  local fh, err = io.open(filename, "r")
+  local contents = ""
+  local size = 0
+  if fh then
+    contents = fh:read("*a")
+    fh:close()
+    size = contents:len()
+  end
+  self = Command(FileService.commandTypes.fileTransfer, {
+    filename=filename,
+    contents = contents,
+    size = size,
+    err = err or ""
+  })
+  return self
+end
+
+-----------------------
+-- FileService class --
+-----------------------
+FileService = Service:new({
+  super = Service,
+  protocol = "protocol:file_service",
+  commandTypes = {
+    fileRequest = "file_request",
+    fileTransfer = "file_transfer",
+    updateAll = "update_all"
+  }
+})
+
+
+function FileService:handleCommand(senderId, command, protocol)
+  if protocol ~= self.protocol then
+    print("Protocol \""..tostring(protocol).."\" is not \""..self.protocol.."\"")
+    return self.super:handleCommand(senderId, command, protocol)
+  end
+  
+  cmdType = command["type"]
+  print("FileService received command: " .. tostring(cmdType))
+  if cmdType == self.commandTypes.fileRequest then
+    self:handleFileRequestCommand(senderId, command, protocol)
+  elseif cmdType == self.commandTypes.fileTransfer then
+    self:handleFileTransferCommand(senderId, command, protocol)
+  elseif cmdType == self.commandTypes.updateAll then
+    self:handleUpdateAllCommand(senderId, command, protocol)
+  end
+end
+
+-- TODO: Security
+function FileService:sendFile(receiverId, filename)
+  print("Sending " .. filename .. " to " .. tostring(receiverId))
+  command = FileTransferCommand(filename)
+  self:sendCommand(receiverId, command)
+end
+
+-- TODO: Security
+function FileService:receiveFile(senderId, fileTransferCommand)
+  local ftc = fileTransferCommand
+  local filename = ftc["filename"]
+  print("Receiving file: "..tostring(filename))
+  local size = ftc["size"]
+  local contents = ftc["contents"]
+  local err = ftc["err"]
+  
+  if size and size > 0 then
+    fh, err = io.open(filename, "w")
+    if not fh then
+      print("Error writing file: "..tostring(err))
+    else
+      fh:write(contents)
+      fh:close()
+    end
+  else
+    print("Empty file.")
+  end
+end
+
+-- TODO: Security
+function FileService:handleFileRequestCommand(senderId, command, protocol) 
+  -- print("Computer with ID " .. tostring(senderId) .. " requested a file using protocol: " .. protocol)
+  filename = command["filename"]
+  assert(filename, "No filename specified.")
+  self:sendFile(senderId, filename, self.protocol) 
+end
+
+-- TODO: Security
+function FileService:handleFileTransferCommand(senderId, command, protocol)
+  self:receiveFile(senderId, command)
+end
+
+-- TODO: Security
+function FileService:handleUpdateAllCommand(senderId, command, protocol)
+  fh = io.open("data/update_list", "r")
+  if not fh then
+    print("Missing data/update_list")
+    self:sendMessage(senderId, "Missing update_list")
+    return
+  end
+  
+  print("Updating "..tostring(senderId))
+  while true do
+    local filename = fh:read("*l")
+    if filename and fs.exists(filename) then
+      self:sendFile(senderId, filename, self.protocol)
+    end    
+  end
+  self:sendEndTransmission(senderId)
+end
+
+
+

@@ -1,0 +1,84 @@
+os.loadAPI("api/serdes")
+
+
+function areTablesEqual(t0, t1)
+  if type(t0) ~= "table" then
+    return t0 == t1
+  end
+  
+  local k, v
+  local areEqual = true
+  for k, v in pairs(t0) do
+    -- print(tostring(k)..": "..tostring(v))
+    areEqual = areEqual and areTablesEqual(v, t1[k])
+  end
+  for k, v in pairs(t1) do
+    -- print(tostring(k)..": "..tostring(v))
+    areEqual = areEqual and areTablesEqual(v, t0[k])
+  end
+  return areEqual
+end
+
+
+function testSerDesSimpleString()
+  local obj = "abc"
+  local serObj = serdes.serialize(obj)
+  local desObj = serdes.deserialize(serObj)
+  local reSerObj = serdes.serialize(desObj)
+  local areEqual = (obj == desObj) and (serObj == reSerObj)
+  assert(areEqual, "failed testSerDesSimpleString")
+end
+
+function testSerDesNumber()
+  local obj = 12345
+  local serObj = serdes.serialize(obj)
+  local desObj = serdes.deserialize(serObj)
+  local reSerObj = serdes.serialize(desObj)
+  local areEqual = (obj == desObj) and (serObj == reSerObj)
+  assert(areEqual, "failed testSerDesNumber")
+end
+
+function testSerDesComplexString()
+  -- local obj = "abc 1'!#$ \\abcd\nb3\\n 334 x:y \"x\":'y'\"'\"'\""
+  local obj = "os.loadAPI(\"api/service\")\ns = service.FileService:new(\"Generic Service\")\ns:init()\ns:start()\n"
+  -- print(obj)
+  local serObj = serdes.serialize(obj)
+  -- print(serObj)
+  local desObj = serdes.deserialize(serObj)
+  -- print(desObj)
+  local reSerObj = serdes.serialize(desObj)
+  local areEqual = (obj == desObj) and (serObj == reSerObj)
+  assert(obj == desObj, "failed testSerDesComplexString")
+end
+
+function testSerDesSimpleTable()
+  local obj = {1, 2, 3; x = "abc", y = "def"}
+  local serObj = serdes.serialize(obj)
+  local desObj = serdes.deserialize(serObj)
+  local areEqual = areTablesEqual(obj, desObj)
+  local reSerObj = serdes.serialize(desObj)
+  areEqual = areEqual and (serObj == reSerObj)
+  assert(areEqual, "failed testSerDesSimpleTable")
+end
+
+function testSerDesComplexTable()
+  local obj = {1, 2, 3; x = "abc", y = "def", {subX = "ghi", subY = { 1000 }}}
+  local serObj = serdes.serialize(obj)
+  local desObj = serdes.deserialize(serObj)
+  local areEqual = areTablesEqual(obj, desObj)
+  local reSerObj = serdes.serialize(desObj)
+  areEqual = areEqual and (serObj == reSerObj)
+  assert(areEqual, "failed testSerDesComplexTable")
+end
+
+
+print("Testing...")
+testSerDesSimpleString()
+testSerDesNumber()
+testSerDesSimpleTable()
+testSerDesComplexTable()
+testSerDesComplexString()
+print("Success.")
+
+
+

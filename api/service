@@ -1,0 +1,148 @@
+-----------------------
+--    Service API    --
+-----------------------
+os.loadAPI("api/tapi")
+os.loadAPI("api/serdes")
+
+-----------------
+-- Constants
+-----------------
+
+----------------------
+-- Static functions --
+----------------------
+
+-- Gets the first side that contains a
+-- modem, or nil if none is found.
+function getModemSide(self)
+  for _, side in ipairs(rs.getSides()) do 
+    local pType = peripheral.getType(side)
+    if pType == "modem" then
+      return side
+    end
+  end
+end
+
+---------------------
+-- Command classes --
+---------------------
+function Command(commandType, kwargs)
+  kwargs = kwargs or {}
+  local self = { type=commandType}
+  for k, v in pairs(kwargs) do
+    self[k] = v
+  end
+  return self
+end
+
+-------------------
+-- Service class --
+-------------------
+Service = {
+  protocol = "protocol:service",
+  commandTypes = {
+    nop = "nop",
+    message = "message",
+    endTransmission = "end_transmission",
+    stop = "stop"
+  }
+}
+
+function Service:new(obj)
+  obj = obj or {}
+  setmetatable(obj, self)
+  self.__index = self  
+  
+  self.hostname = obj["hostname"] or "0.0.0.0"
+  self.initialized = false
+  self.running = false
+  self.modemSide = nil
+  
+  return obj
+end
+
+-- Initialize member variables
+-- (does not start the server)
+function Service:init()
+  if not self.initialized then
+    self.modemSide = getModemSide()
+    assert(self.modemSide, "No modem found.")
+    self.initialized = true
+  end
+end
+
+-- Asserts that the server is initialized
+function Service:checkInitialized()
+  assert(self.initialized, "Service is not initialized.")
+end  
+
+-- Asserts that the server is started
+function Service:checkRunning()
+  assert(self.running, "Service is not started.")
+end
+
+-- Starts the service
+function Service:start()
+  self:checkInitialized()
+  if not (self.running and rednet.isOpen(self.modemSide)) then
+    rednet.open(self.modemSide)
+    rednet.host(self.protocol, self.hostname)
+    self.running = true
+  end
+  
+  -- Main loop
+  while self.running do
+    local senderId, command, protocol = rednet.receive(1)
+    if command then
+      status, err = pcall(function() self:handleCommand(senderId, command, protocol) end)
+      if err then
+        print("Exception occurred while handling command:")
+        print(err)
+      end
+    end
+  end 
+end
+  
+function Service:handleCommand(senderId, command, protocol)
+  print("Service received command: " .. tostring(command["type"]))
+  if command["type"] == Service.commandTypes.stop then
+    self:stop()
+  end
+end
+
+-- Stops the server
+function Service:stop()
+  print("Stopping service.")
+  if self.running or rednet.isOpen(self.modemSide) then
+    rednet.unhost(Service.protocol, hostname)
+    rednet.close(self.modemSide)
+    self.running = false
+  end
+end
+
+function Service:sendCommand(receiverId, command)
+  self:checkInitialized()
+  self:checkRunning()
+  rednet.send(receiverId, command, self.protocol)
+end
+
+function Service:sendMessage(receiverId, message)
+  messageCommand = Command(self.commandTypes.message, {message=message})
+  self:sendCommand(receiverId, messageCommand)
+end
+
+function Service:sendEndTransmission(receiverId)
+  cmd = Command(self.commandTypes.endTransmission)
+  self:sendCommand(receiverId, cmd)
+end
+
+-- Broadcasts a message
+function Service:broadcast(message)
+  self:checkInitialized()
+  self:checkRunning()
+  rednet.broadcast(message, self.protocol)
+end
+
+
+
+
