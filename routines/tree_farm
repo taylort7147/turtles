@@ -1,0 +1,9 @@
+dig
+loop 6
+left
+forward 5
+right
+dig
+place minecraft:sapling
+loopend
+

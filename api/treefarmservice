@@ -1,0 +1,26 @@
+------------------
+-- Dependencies --
+------------------
+assert(os.loadAPI("api/instruction_processor"), "Required API missing: instruction_processor")
+local ip = instruction_processor
+
+---------------
+-- Constants --
+---------------
+TREE_FARM_SERVICE_PROTOCOL = "protocol:tree_farm"
+
+function generateStartCommandCallback(routineFilename)
+  callback = function(senderId, command, protocol) 
+      if protocol == TREE_FARM_SERVICE_PROTOCOL then
+        ip.executeRoutine(routineFilename) 
+      end
+    end
+  return callback
+end
+
+TreeFarmServiceCommands = {
+  start = "start"
+}
+
+
+

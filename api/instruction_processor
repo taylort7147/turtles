@@ -167,3 +167,12 @@ function executeInstructions(t)
     index = index + t[index]:getRelativeJumpLocation()    
   end
 end
+
+function executeRoutine(filename)
+  assert(type(filename) == "string", "Expected filename to be a string, but got "..type(filename))
+  local iq = parseFile(filename)
+  assert(iq, "Failed to parse "..filename)
+  local c = compileInstructions(iq)
+  assert(c, "Failed to compile "..filename)
+  assert(executeInstructions(c), "Error occurred while executing instructions for "..filename)
+end

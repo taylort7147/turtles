@@ -1,0 +1,12 @@
+harvestTree
+plantSapling
+loop 6
+left
+forward 5
+right
+harvestTree
+plantSapling
+loopend
+right
+forward 30
+left
