@@ -1,7 +1,7 @@
 -----------------------
 --    Service API    --
 -----------------------
-assert(os.loadAPI("api/util"), "Required API missing: util")
+assert(os.loadAPI("api/util.lua"), "Required API missing: util")
 
 -----------------
 -- Constants

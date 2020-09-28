@@ -1,8 +1,8 @@
-api/service
-api/fileservice
-api/util
-startup
-scripts/request_file
-scripts/command
-scripts/update
+api/service.lua
+api/fileservice.lua
+api/util.lua
+startup.lua
+scripts/request_file.lua
+scripts/command.lua
+scripts/update.lua
 data/update_list

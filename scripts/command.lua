@@ -1,4 +1,4 @@
-assert(os.loadAPI("api/service"), "Required API missing: service")
+assert(os.loadAPI("api/service.lua"), "Required API missing: service")
 local svc = service
 local USAGE = "command COMMAND [ID]"
 

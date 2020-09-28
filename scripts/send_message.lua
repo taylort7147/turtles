@@ -1,4 +1,4 @@
-os.loadAPI("api/service")
+os.loadAPI("api/service.lua")
 
 args = { ... }
 msg = ... or "empty"

@@ -1,6 +1,6 @@
-os.loadAPI("api/service")
-os.loadAPI("api/fileservice")
-os.loadAPI("env")
+os.loadAPI("api/service.lua")
+os.loadAPI("api/fileservice.lua")
+os.loadAPI("env.lua")
 local svc = service
 local fsvc = fileservice
 
