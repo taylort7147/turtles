@@ -1,12 +1,11 @@
 os.loadAPI("api/service")
 os.loadAPI("api/fileservice")
+os.loadAPI("env")
 local svc = service
 local fsvc = fileservice
 
-mainServer = "Computer_13"
-
 rednet.open(svc.getModemSide())
-id = rednet.lookup(fsvc.FILE_SERVICE_PROTOCOL, mainServer)
+id = rednet.lookup(fsvc.FILE_SERVICE_PROTOCOL, env.mainServer)
 if id == nil then
   print("Host not found")
   exit(-1)
