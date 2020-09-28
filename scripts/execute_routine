@@ -1,8 +1,0 @@
-assert(os.loadAPI("api/instruction_processor"), "Required API missing: instruction_processor")
-local ip = instruction_processor
-
-local filename = ...
-
-local iq = ip.parseFile(filename)
-local c = ip.compileInstructions(iq)
-local success = ip.executeInstructions(c)

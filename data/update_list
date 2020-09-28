@@ -1,15 +1,8 @@
 api/service
 api/fileservice
-api/treefarmservice
-api/farm
-api/tapi
-api/serdes
-api/treefarmapi
 api/util
-api/instruction
-api/instruction_processor
-api/data_struct
 startup
 scripts/request_file
-scripts/execute_routine
 scripts/command
+scripts/update
+data/update_list
