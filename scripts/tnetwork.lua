@@ -1,3 +1,5 @@
+os.loadAPI("env")
+
 -- Set to true to enable the service
 -- or false to disable it.
 local FILE_SERVICE_ENABLED = true
@@ -16,6 +18,9 @@ local hostname = "Computer_"..tostring(os.getComputerID())
 
 -- Create the server
 s = svc.Server:new()
+
+-- Host protocols and services from env
+
 
 -- Host protocols
 svc.host(svc.SERVICE_PROTOCOL, hostname)

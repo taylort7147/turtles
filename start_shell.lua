@@ -1,0 +1,5 @@
+term.clear()
+term.setCursorPos(1, 1)
+term.write("TShell")
+term.setCursorPos(1, 2)
+shell.run("shell")
