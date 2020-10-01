@@ -1,4 +1,4 @@
-EventManager = require("eventmanager")
+EventManager = require("event_manager")
 RelayService = require("services/relay2")
 
 function cb1(event, p1)
