@@ -37,10 +37,12 @@ function Farm:isHarvestable(cropDescription, data)
   end
 
   -- Check requirements
-  local req = expectData.requirements 
-  if req then
-    if req.age and data.state.age < req.age then
-      return false
+  local requirements = expectData.requirements 
+  if requirements then
+    for _, req in ipairs(requirements) do
+      if req(data) ~= true then
+        return false
+      end
     end
   end
 

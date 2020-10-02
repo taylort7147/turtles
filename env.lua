@@ -15,21 +15,21 @@ env = {
   farm = {
     direction = "left",
     length = 22,
-    minEmptySlots = 3,
+    minEmptySlots = 5,
     minSeeds = 32,
     layout = {
       "wheat",
       "carrots",
+      "hemp",
       "wheat",
       "carrots",
+      "hemp",
       "wheat",
       "carrots",
+      "beetroots",
       "wheat",
       "carrots",
-      "wheat",
-      "carrots",
-      "wheat",
-      "carrots",
+      "potatoes",
       "wheat",
       "carrots",
       "wheat",
@@ -49,7 +49,7 @@ env = {
         block = {
           name = "minecraft:wheat",
           requirements = {
-            age = 7
+            function(data) return data.state.age == 7 end
           }
         },
         seeds = {
@@ -61,11 +61,47 @@ env = {
         block = {
           name = "minecraft:carrots",
           requirements = {
-            age = 7
+            function(data) return data.state.age == 7 end
           }
         },
         seeds = {
           name = "minecraft:carrot"
+        }
+      },
+      ["hemp"] = {
+        harvestable = true,
+        block = {
+          name = "immersiveengineering:hemp",
+          requirements = {
+            function(data) return data.state.growth == "bottom4" end
+          }
+        },
+        seeds = {
+          name = "immersiveengineering:seed"
+        }
+      },
+      ["beetroots"] = {
+        harvestable = true,
+        block = {
+          name = "minecraft:beetroots",
+          requirements = {
+            function(data) return data.state.age >= 3 end
+          }
+        },
+        seeds = {
+          name = "minecraft:beetroot_seeds"
+        }
+      },
+      ["potatoes"] = {
+        harvestable = true,
+        block = {
+          name = "minecraft:potatoes",
+          requirements = {
+            function(data) return data.state.age >= 7 end
+          }
+        },
+        seeds = {
+          name = "minecraft:potato"
         }
       }
     } -- cropDescriptions
