@@ -51,8 +51,19 @@ function turtlex.turnOpposite(direction)
   turtlex.turn(turtlex.getOppositeDirection(direction))
 end
 
-function turtlex.forward(amount)
-  turtlex.repeatFunc(amount, turtle.forward)
+function turtlex.forward(amount, force)
+  if force == nil then
+    force = true
+  end
+  turtlex.repeatFunc(amount, 
+    function()
+      if force then 
+        turtle.dig() 
+        turtle.suck()
+      end
+      turtle.forward()
+    end
+  )
 end
 
 function turtlex.back(amount)
